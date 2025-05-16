@@ -79,6 +79,6 @@ jobs:
       - name: Push image to Aliyun Docker Registry
         run: |
           docker buildx imagetools create \
-            --tag ${{ secrets.ALIYUN_REGISTRY }}/clklog/manage:latest \
+            --tag ${{ secrets.ALIYUN_REGISTRY }}/clklog/manage:1.2.0 \
             zcunsoft/manage:${{ github.ref_name }}
 
