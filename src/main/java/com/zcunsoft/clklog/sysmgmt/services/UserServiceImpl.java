@@ -3,6 +3,7 @@ package com.zcunsoft.clklog.sysmgmt.services;
 import com.zcunsoft.clklog.common.utils.SecurityUtils;
 import com.zcunsoft.clklog.common.utils.StringUtils;
 import com.zcunsoft.clklog.sysmgmt.assemblers.UserAssembler;
+import com.zcunsoft.clklog.sysmgmt.cfg.AdminNameProperties;
 import com.zcunsoft.clklog.sysmgmt.domains.User;
 import com.zcunsoft.clklog.sysmgmt.dto.*;
 import com.zcunsoft.clklog.sysmgmt.models.enums.ErrorCode;
@@ -38,9 +39,12 @@ public class UserServiceImpl implements IUserService {
 
     private final IUserRepository userRepository;
 
-    public UserServiceImpl(ICodeService codeService, IUserRepository userRepository) {
+    private final AdminNameProperties adminNameProperties;
+
+    public UserServiceImpl(ICodeService codeService, IUserRepository userRepository, AdminNameProperties adminNameProperties) {
         this.codeService = codeService;
         this.userRepository = userRepository;
+        this.adminNameProperties = adminNameProperties;
     }
 
     @Override
@@ -167,8 +171,13 @@ public class UserServiceImpl implements IUserService {
         ErrorCode code = ErrorCode.Failed;
         try {
             Optional<User> optUser = userRepository.findById(userId);
-            Set<String> adminName = new HashSet<>(Arrays.asList("clklog", "admin"));
-            if (optUser.isPresent() && !adminName.contains(optUser.get().getUserName())) {
+            if (!optUser.isPresent()) {
+                code = ErrorCode.Failed;
+            } else if (adminNameProperties.isProtected(optUser.get().getUserName())) {
+                logger.warn("Delete protected user denied: userId={}, userName={}", userId, optUser.get().getUserName());
+                code = ErrorCode.Forbidden;
+                isOk = false;
+            } else {
                 userRepository.delete(optUser.get());
                 isOk = true;
                 code = ErrorCode.Success;
