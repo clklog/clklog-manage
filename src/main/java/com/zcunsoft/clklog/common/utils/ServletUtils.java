@@ -1,5 +1,8 @@
 package com.zcunsoft.clklog.common.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -12,6 +15,8 @@ import java.io.IOException;
  * 客户端工具类
  */
 public class ServletUtils {
+    private static final Logger logger = LoggerFactory.getLogger(ServletUtils.class);
+
     /**
      * 获取request
      *
@@ -50,7 +55,7 @@ public class ServletUtils {
             response.setCharacterEncoding("utf-8");
             response.getWriter().print(string);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("unexpected error", e);
         }
         return null;
     }

@@ -15,34 +15,40 @@ spring:
   application.name: clklog-manage
   datasource:
     mysql:
-      jdbc-url: jdbc:mysql://10.10.223.231:3306/clklog?characterEncoding=UTF-8&useTimezone=true&serverTimezone=GMT%2B8
-      username: root
-      password: 123456
+      jdbc-url: ${MYSQL_JDBC_URL:jdbc:mysql://10.10.223.231:3306/clklog?characterEncoding=UTF-8&useTimezone=true&serverTimezone=GMT%2B8}
+      username: ${MYSQL_USERNAME:root}
+      password: ${MYSQL_PASSWORD:123456}
       driver-class-name: com.mysql.cj.jdbc.Driver
     clickhouse:
-      jdbc-url: jdbc:clickhouse://10.10.220.188:8123/default
-      username: default
-      password:
+      jdbc-url: ${CLICKHOUSE_JDBC_URL:jdbc:clickhouse://10.10.220.188:8123/default}
+      username: ${CLICKHOUSE_USERNAME:default}
+      password: ${CLICKHOUSE_PASSWORD:}
       driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
   redis:
-    # 单机配置
-    host: 10.10.220.37
-    port: 6379
-  # password:
-  # 哨兵配置
-  # sentinel:
-  #  master: gct
-  #  nodes: 10.100.2.1:26379,10.100.2.2:26379,10.100.2.3:26379
+    host: ${REDIS_HOST:10.10.220.37}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
 token:
-  # 令牌自定义标识
   header: Authorization
-  # 令牌密钥
-  secret: c609737e578978eccc64cef4be680
-  # 令牌有效期（默认30分钟）
+  # api 与 manage 必须使用同一密钥（前端登录在 manage 签发，业务接口在 api 校验）
+  # 生产务必通过环境变量 TOKEN_SECRET 覆盖为足够长的随机串
+  secret: ${TOKEN_SECRET:clklog-shared-change-me-use-env-token-secret-at-least-32chars}
   expireTime: 300
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
 logging:
   file:
     path: log
 clklog-common:
-  access-control-allow-origin-patterns: "*"
+  # 部署验证用版本戳（登录接口返回）；可用环境变量 CLKLOG_BUILD_TAG 覆盖
+  build-tag: ${CLKLOG_BUILD_TAG:sec-fix-20260807}
+  # 默认 * 兼容现有部署；代码在 origin=* 时会关闭 allowCredentials，避免 P0 组合风险
+  # 生产建议设为具体前端域名，例如 CORS_ORIGIN_PATTERNS=https://demo.example.com
+  access-control-allow-origin-patterns: ${CORS_ORIGIN_PATTERNS:*}
   anonymous-method-list: /auth/login

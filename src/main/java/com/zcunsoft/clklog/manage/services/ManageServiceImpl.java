@@ -804,7 +804,7 @@ public class ManageServiceImpl implements IManageService {
                 lineNumberReader.close();
                 return lines;
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("unexpected error", e);
             }
         }
         return 0;

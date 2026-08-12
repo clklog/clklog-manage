@@ -12,6 +12,7 @@ import com.zcunsoft.clklog.sysmgmt.models.response.ResponseBase;
 import com.zcunsoft.clklog.sysmgmt.repository.IUserLoginRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,6 +39,9 @@ public class AuthServiceImpl implements IAuthService {
 
     private final AuthenticationManager authenticationManager;
 
+    @Value("${clklog-common.build-tag:}")
+    private String buildTag;
+
     public AuthServiceImpl(ICodeService codeService, IUserLoginRepository userLoginRepository,
                            AuthenticationManager authenticationManager, TokenService tokenService) {
         this.codeService = codeService;
@@ -60,6 +64,7 @@ public class AuthServiceImpl implements IAuthService {
             userInfo.setToken(token);
             userInfo.setDisplayName(loginUser.getUser().getDisplayName());
             userInfo.setUserName(loginUser.getUsername());
+            userInfo.setBuildTag(buildTag);
             UserLogin userLogin = new UserLogin();
             userLogin.setUserName(usrLogin.getUsername());
             userLogin.setCreateTime(new Timestamp(System.currentTimeMillis()));

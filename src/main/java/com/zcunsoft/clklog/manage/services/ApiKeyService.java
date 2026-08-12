@@ -87,11 +87,11 @@ public class ApiKeyService {
                 } else {
                     this.stringRedisTemplate.persist(key);
                 }
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Cached API Key: {}", maskApiKey(apiKey));
+                }
             } catch (JsonProcessingException e) {
-
-            }
-            if (logger.isDebugEnabled()) {
-                logger.debug("Cached API Key: {}", apiKey);
+                logger.warn("Failed to serialize loginUser for API Key cache", e);
             }
         }
     }
@@ -108,7 +108,8 @@ public class ApiKeyService {
                 removeApiKey(apiKey.getApiKey());
             }
         } catch (Exception e) {
-            logger.error("Failed to cache API Key: {}", apiKey.getApiKey(), e);
+            String keyHint = apiKey == null ? "" : maskApiKey(apiKey.getApiKey());
+            logger.error("Failed to cache API Key: {}", keyHint, e);
         }
     }
 
@@ -116,7 +117,7 @@ public class ApiKeyService {
         if (apiKey != null) {
             this.stringRedisTemplate.delete("clklog:apikey:" + apiKey);
             if (logger.isDebugEnabled()) {
-                logger.debug("Removed API Key cache: {}", apiKey);
+                logger.debug("Removed API Key cache: {}", maskApiKey(apiKey));
             }
         }
     }
@@ -297,10 +298,17 @@ public class ApiKeyService {
     /**
      * API Key脱敏处理
      * 显示前6位和后4位，中间用*代替
-     * 例如：clk_abc123def45678901234 → clk_abc123def4****
+     * 例如：clk_abc123def45678901234 → clk_ab***************1234
      */
     private String maskApiKey(String apiKey) {
-        return apiKey.substring(0, 6) + "*******************************" + apiKey.substring(20);
+        if (apiKey == null || apiKey.isEmpty()) {
+            return "";
+        }
+        if (apiKey.length() <= 10) {
+            return "****";
+        }
+        int prefixLen = Math.min(6, apiKey.length() - 4);
+        return apiKey.substring(0, prefixLen) + "*******************************" + apiKey.substring(apiKey.length() - 4);
     }
 
     /**

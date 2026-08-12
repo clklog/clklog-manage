@@ -27,4 +27,10 @@ public class UserInfoDTO {
     @Schema(description = "Token", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c")
     private String token;
 
+    /**
+     * 后端构建版本戳（用于确认部署是否生效）
+     */
+    @Schema(description = "构建版本戳", example = "sec-fix-20260807")
+    private String buildTag;
+
 }
